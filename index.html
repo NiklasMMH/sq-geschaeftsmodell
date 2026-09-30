@@ -40,12 +40,15 @@ body.idle{cursor:none}
 .hl h1{position:absolute;left:0;top:0;font-family:var(--serif);font-weight:400;font-size:112px;line-height:.98;letter-spacing:-3px;color:var(--ink)}
 .hl h1 em{color:var(--rose);font-style:italic;letter-spacing:-2.5px}
 .hl h1 .w{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .04em .12em 0;margin-bottom:-.12em}
-.hl h1 .w>span{display:inline-block;transform:translateY(110%);transition:transform .9s var(--ease)}
-.hl h1.on .w>span{transform:none}
-.hl h1.out .w>span{transform:translateY(-110%);transition:transform .45s var(--out)}
+.hl h1{opacity:0;transition:opacity .28s ease}
+.hl h1.on{opacity:1;transition:none}
+/* leave: whole line fades out in place, words reset only once invisible */
+.hl h1 .w>span{display:inline-block;transform:translateY(110%);transition:transform 0s .35s}
+/* enter: starts after the old line is gone, word by word */
+.hl h1.on .w>span{transform:none;transition:transform .9s var(--ease) calc(380ms + var(--d,0ms))}
 .sub{position:absolute;left:120px;top:700px;width:620px;height:120px}
-.sub p{position:absolute;inset:0;font-size:29px;line-height:1.42;color:var(--muted);font-weight:300;opacity:0;transform:translateY(12px);transition:opacity .5s,transform .6s var(--ease)}
-.sub p.on{opacity:1;transform:none;transition-delay:.35s}
+.sub p{position:absolute;inset:0;font-size:29px;line-height:1.42;color:var(--muted);font-weight:300;opacity:0;transform:translateY(12px);transition:opacity .25s ease,transform 0s .3s}
+.sub p.on{opacity:1;transform:none;transition:opacity .5s ease .75s,transform .7s var(--ease) .75s}
 .sub p b{color:var(--ink);font-weight:500}
 
 .rail{position:absolute;left:120px;bottom:84px;display:flex}
@@ -386,7 +389,7 @@ body.idle{cursor:none}
       else { const cl = c.cloneNode(false); walk(c, cl); out.appendChild(cl); }
     });
     const f = document.createElement('div'); walk(h, f); h.innerHTML = f.innerHTML;
-    h.querySelectorAll('.w>span').forEach((s, i) => s.style.transitionDelay = (i * 55) + 'ms');
+    h.querySelectorAll('.w>span').forEach((s, i) => s.style.setProperty('--d', (i * 55) + 'ms'));
   });
 
   const HIDE_L = [-260, 0, .9, 0, 14], HIDE_R = [260, 0, .9, 0, 14];
@@ -430,8 +433,7 @@ body.idle{cursor:none}
     clearAll(); reset();
     localStorage.setItem(KEY, step);
     $('kn').textContent = String(step).padStart(2, '0');
-    document.querySelectorAll('.hl h1').forEach(h => { const on = +h.dataset.s === step; if (h.classList.contains('on') && !on) h.classList.add('out'); h.classList.toggle('on', on); if (on) h.classList.remove('out'); });
-    setTimeout(() => document.querySelectorAll('.hl h1.out').forEach(h => h.classList.remove('out')), 500);
+    document.querySelectorAll('.hl h1').forEach(h => h.classList.toggle('on', +h.dataset.s === step));
     document.querySelectorAll('.sub p').forEach(p => p.classList.toggle('on', +p.dataset.s === step));
     rail.forEach((r, i) => { const n = i + 1; r.classList.toggle('ok', step > n || step >= 5); r.classList.toggle('cur', step === n); });
     $('hint').style.opacity = step === 0 ? 1 : 0;
