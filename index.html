@@ -507,6 +507,27 @@ svg.fl path.g{stroke:#BFB1A7}
 .hint{position:absolute;right:100px;bottom:84px;font-size:16px;color:var(--muted);display:flex;gap:10px;align-items:center;transition:opacity .6s}
 .hint kbd{font-family:var(--sans);font-size:13px;border:1px solid #DCD2CB;border-bottom-width:2px;border-radius:7px;padding:3px 9px;color:var(--ink);background:#fff}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
+
+/* ===== mobile portrait (only when body.m; desktop untouched) ===== */
+body.m{background:var(--bg)}
+body.m #stage{width:1080px;height:1920px}
+body.m .blob.b1{left:300px;top:-200px}
+body.m .blob.b2{left:400px;top:1200px}
+body.m .brand{left:72px;top:70px;font-size:52px}
+body.m .kicker{left:72px;top:190px;font-size:22px}
+body.m .hl{left:72px;top:240px;width:940px;height:340px}
+body.m .hl h1{font-size:104px;line-height:1}
+body.m .sub{left:72px;top:600px;width:936px;height:200px}
+body.m .sub p{font-size:40px;line-height:1.38}
+body.m .scene{left:60px;top:calc(820px + var(--mx2,0px))}
+body.m .tilt{transform:none!important}
+body.m .rail,body.m .hint{display:none}
+#mnav{display:none}
+body.m #mnav{display:block;position:absolute;left:72px;right:72px;bottom:70px}
+#mnav .tr{height:8px;border-radius:8px;background:#E6DCD5;overflow:hidden}
+#mnav .tr i{display:block;height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,var(--rose),var(--rose2));transition:width .8s var(--ease)}
+#mnav .tx{display:flex;justify-content:space-between;margin-top:24px;font-size:30px;color:var(--muted)}
+#mnav .tx b{color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -553,6 +574,8 @@ svg.fl path.g{stroke:#BFB1A7}
     <div class="rs"><span class="dot">6</span><span class="lb">Hochrechnung</span><span class="bar"></span></div>
   </div>
   <div class="hint" id="hint"><kbd>Klick</kbd><kbd>→</kbd> weiter <kbd>←</kbd> zurück <kbd>F</kbd> Vollbild</div>
+
+  <div id="mnav"><div class="tr"><i id="mbar"></i></div><div class="tx"><span><b id="mstep">1</b> / 12</span><span id="mhint">Tippen für weiter →</span></div></div>
 
   <div class="scene"><div class="tilt" id="tilt">
 
@@ -744,7 +767,7 @@ function resetScenes() {
 function go(s) {
   step = Math.max(0, Math.min(N - 1, s));
   try { localStorage.setItem('sq-gm-step', step); } catch(e) {}
-  $('kn').textContent = String(step).padStart(2, '0');
+  $('kn').textContent = String(step).padStart(2, '0'); $('mbar').style.width = (step / (N - 1) * 100) + '%'; $('mstep').textContent = step + 1; $('mhint').textContent = step === N - 1 ? 'Links tippen = zurück' : 'Tippen für weiter →';
   document.querySelectorAll('.hl h1').forEach(h => h.classList.toggle('on', +h.dataset.s === step));
   document.querySelectorAll('.sub p').forEach(p => p.classList.toggle('on', +p.dataset.s === step));
   const rmap = [-1,0,0,0,1,2,3,4,5,5,6,6];
@@ -818,7 +841,7 @@ const t0 = Date.now();
 setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); $('tmr2').textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }, 1000);
 
 // fit
-function fit() { const k = Math.min(innerWidth / 1920, innerHeight / 1080); $('stage').style.transform = `translate(-50%,-50%) scale(${k})`; }
+function fit() { const m = innerWidth < innerHeight && innerWidth < 1000; document.body.classList.toggle('m', m); const W = m ? 1080 : 1920, H = m ? Math.max(1920, Math.round(1080 * innerHeight / innerWidth)) : 1080; const st = $('stage'); st.style.height = m ? H + 'px' : ''; st.style.setProperty('--mx2', m ? Math.round((H - 1920) / 2) + 'px' : '0px'); const k = Math.min(innerWidth / W, innerHeight / H); st.style.transform = `translate(-50%,-50%) scale(${k})`; }
 addEventListener('resize', fit); fit();
 
 // input
